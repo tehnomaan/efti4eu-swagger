@@ -1,0 +1,1168 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "eFTI Message Exchange API",
+    "description": "This API defines the services for eFTI gate and platform message exchange",
+    "termsOfService": "http://localhost:8080/terms",
+    "contact": {
+      "url": "http://localhost:8080/",
+      "email": "margus.selge@miltema.com"
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://choosealicense.com/licenses/mit/"
+    },
+    "version": "0.1"
+  },
+  "servers": [
+    {
+      "url": "https://ee-gate-api.miltema.com/",
+      "description": "API base URL"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Services implemented in the eFTI Platform",
+      "description": "These are the services that must be implemented on the eFTI platform. The eFTI gate invokes these services when requested by a competent authority."
+    },
+    {
+      "name": "Services implemented in the eFTI Gate",
+      "description": "The services are for posting eFTI messages. These services can be used by any eFTI gate in another member state, by any eFTI platform in national subnet, and by any national authority access point"
+    }
+  ],
+  "paths": {
+    "/xroad/v1/test-register": {
+      "post": {
+        "tags": [
+          "Services for X-Road security server"
+        ],
+        "summary": "A service to test a POST request",
+        "description": "It replies with an arbitrary list (by copying some details from the request)",
+        "operationId": "registerNew",
+        "parameters": [
+          {
+            "name": "X-Road-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "description": "Any JSON request body will do"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/upload-metadata": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Gate"
+        ],
+        "summary": "Upload metadata to the gate",
+        "description": "This request represents eFTI message <b>FTI004</b>.\nPlatform is not required to pass metadataId, uil or eftiGateId with this request.\nSee <a href='#model-UploadMetadataRequest'>UploadMetadataRequest-schema</a> and\n<a href='#model-Metadata'>Metadata-schema</a> below.",
+        "operationId": "uploadMetadata",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadMetadataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadMetadataResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/search-metadata": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Gate"
+        ],
+        "summary": "Search metadata by its attributes",
+        "description": "This request represents eFTI messages <b>FTI014</b> (from AAP) and <b>FTI019</b> (from another gate). The request schema is defined below, see <a href='#model-SearchMetadataRequest'>SearchMetadataRequest-schema</a>. The response represents zero, one or multiple metadata sets as an array (eFTI messages <b>FTI017</b> and <b>FTI021</b>), see <a href='#model-SearchMetadataResponse'>SearchMetadataResponse-schema</a> below. Internally, the gate fetches the metadata from its metadata/index registry. ",
+        "operationId": "searchMetadata",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchMetadataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchMetadataResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/request-dataset": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Gate"
+        ],
+        "summary": "Request eFTI dataset by UIL",
+        "description": "This request represents eFTI messages <b>FTI008</b> (from AAP) and <b>FTI020</b> (from another gate). The request schema is defined below, see <a href='#model-GetDatasetRequest'>GetDatasetRequest-schema</a>. The response represents eFTI messages <b>FTI018</b> and <b>FTI022</b> respectively, see <a href='#model-GetDatasetResponse'>GetDatasetResponse-schema</a> below. ",
+        "operationId": "requestDataset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetDatasetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "404": {
+            "description": "eFTI dataset could not be found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDatasetResponse"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Unable to fetch the eFTI dataset from the eFTI platform",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDatasetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/forward-notes": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Gate"
+        ],
+        "summary": "Forward notes",
+        "description": "This request represents eFTI messages <b>FTI038</b> (from AAP) and <b>FTI040</b> (from another gate). The request is defined below, see <a href='#model-SendNotesRequest'>SendNotesRequest-schema</a> below. There is no response to this message in eFTI context. This endpoint responds with ACK in case of success. ",
+        "operationId": "forwardNotes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/platform/v1/request-dataset": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Platform"
+        ],
+        "summary": "Request eFTI dataset by dataset id",
+        "description": "This request represents eFTI messages <b>FTI009</b>. The request schema is defined below, see <a href='#model-PlatformGetDatasetRequest'>PlatformGetDatasetRequest-schema</a>. The response represents eFTI messages <b>FTI010</b>, see <a href='#model-PlatformGetDatasetResponse'>PlatformGetDatasetResponse-schema</a> below. ",
+        "operationId": "requestDataset_1",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlatformGetDatasetRequest"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "eFTI dataset could not be found in the platform",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformGetDatasetResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/platform/v1/forward-notes": {
+      "post": {
+        "tags": [
+          "Services implemented in the eFTI Platform"
+        ],
+        "summary": "Forward notes",
+        "description": "This request represents eFTI message <b>FTI039</b> (from national gate). The request is defined below, see <a href='#model-SendNotesRequest'>SendNotesRequest-schema</a> below. There is no response to this message in eFTI context. This endpoint responds with ACK in case of success. ",
+        "operationId": "forwardNotes_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendNotesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xroad/v1/vehicle": {
+      "get": {
+        "tags": [
+          "Services for X-Road security server"
+        ],
+        "summary": "Find active eFTI datasets by vehicle plate vehicleId",
+        "description": "Based on vehicle plate vehicleId, the service fetches eFTI dataset from the Estonian eFTI gate. In addition, the service forwards the request to all eFTI gates in the EU, to query data potentially registered in the eFTI gates of other member states. The service combines the replies from other EU gates with the data registered in Estonian gate and returns it as an array of eFTI dataset objects (see <u>EftiDatasetDTO-schema</u> below for further details). This service may take a long time to execute (several minutes) - use a timeout to speed up the reply.<br><b>REMARKS:</b> Only open CMR-s are available via this service; historical CMR-s of past deliveries are excluded from the results</b>",
+        "operationId": "findByVehicleNumber",
+        "parameters": [
+          {
+            "name": "country",
+            "in": "query",
+            "description": "The vehicleCountry that issued the license plate, in ISO 3166-1 alpha-2 format. Notice that 1..3-character vehicleCountry code on the vehicle license plate differs from ISO alpha-2 code.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "The vehicleCountry that issued the license plate, in ISO 3166-1 alpha-2 format. Notice that 1..3-character vehicleCountry code on the vehicle license plate differs from ISO alpha-2 code.",
+              "example": "EE"
+            },
+            "example": "EE"
+          },
+          {
+            "name": "vehicleNumber",
+            "in": "query",
+            "description": "Vehicle plate vehicleId - only full numbers are accepted; vehicleId fragments will not return any results. <br><b>REMARKS:</b> Currently the exact vehicleId format is unclear - most likely only numbers and characters without whitespace and punctuation symbols must be used.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Vehicle plate vehicleId - only full numbers are accepted; vehicleId fragments will not return any results. <br><b>REMARKS:</b> Currently the exact vehicleId format is unclear - most likely only numbers and characters without whitespace and punctuation symbols must be used.",
+              "example": "179MGD"
+            },
+            "example": "179MGD"
+          },
+          {
+            "name": "timeout",
+            "in": "query",
+            "description": "Timeout in seconds. If a timeout occurs prior to all replies having arrived from other gates, this service only returns the combination of the replies that have arrived into the Estonian gate thus far",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Timeout in seconds. If a timeout occurs prior to all replies having arrived from other gates, this service only returns the combination of the replies that have arrived into the Estonian gate thus far",
+              "example": 10,
+              "default": "60"
+            },
+            "example": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FindByVehicleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xroad/v1/test-status": {
+      "get": {
+        "tags": [
+          "Services for X-Road security server"
+        ],
+        "summary": "Most simple GET request for testing",
+        "description": "Just run the GET request without any parameters",
+        "operationId": "status",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xroad/v1/test-list": {
+      "get": {
+        "tags": [
+          "Services for X-Road security server"
+        ],
+        "summary": "A more challenging service to test GET request",
+        "description": "It replies with an arbitrary list (by copying some data from the request)",
+        "operationId": "abc",
+        "parameters": [
+          {
+            "name": "Accept",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Road-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Optional query parameter, put any string here",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Metadata": {
+        "required": [
+          "countryEnd",
+          "countryStart",
+          "eftiDatasetId",
+          "eftiPlatformId",
+          "transportEquipment",
+          "transportMeans",
+          "transportMode"
+        ],
+        "type": "object",
+        "properties": {
+          "metadataId": {
+            "type": "string",
+            "description": "Field generated by the metadata registry to uniquely identify the metadata object.\nWhenever platform uploads new metadata to the gate, the gate saves this metadata in its index registry\nand issues a new metadata identifier to the metadata.\nWhen other eFTI gates or AAP-s request metadata, the gate also returns metadata id in this field.\nThis field should never be filled in by the eFTI platform.",
+            "format": "uuid",
+            "example": "122a9508-28b0-45a8-9645-63a69c2fe61f"
+          },
+          "eftiDatasetId": {
+            "type": "string",
+            "description": "eFTI dataset unique identifier; this identifier is assigned by the eFTI platform.\nEven if the platform updates the individual elements in the eFTI dataset, the eFTI dataset id must remain unchanged.\nNotice however that with each new metadata uploading to the gate, the gate will change corresponding metadata id",
+            "example": "93d1955c-39de-4bdf-8635-9ad330b4bf70"
+          },
+          "uil": {
+            "type": "string",
+            "description": "UIL of the eFTI dataset.\nThe eFTI gate issues the UIL when the platform first uploads the metadata to the gate.\n<br><b>REMARKS:</b> UIL format has not been defined yet. TG3 or TG4 should propose proper format.\nCurrently, UIL is defined in XML format only in TIS annex 3 (§6.1)"
+          },
+          "eftiGateId": {
+            "type": "string",
+            "description": "Identifier of the eFTI gate, which has direct access to the platform, hosting the eFTI dataset",
+            "example": "EU-EE1"
+          },
+          "eftiPlatformId": {
+            "type": "string",
+            "description": "Identifier of the eFTI platform, hosting the eFTI dataset",
+            "example": "EE-ATV"
+          },
+          "transportMode": {
+            "type": "string",
+            "description": "Identifies one between RAILWAY, ROAD, AIR, WATERWAY",
+            "example": "ROAD",
+            "enum": [
+              "RAILWAY",
+              "ROAD",
+              "AIR"
+            ]
+          },
+          "transportMeans": {
+            "$ref": "#/components/schemas/Vehicle"
+          },
+          "transportEquipment": {
+            "$ref": "#/components/schemas/Vehicle"
+          },
+          "journeyStart": {
+            "type": "string",
+            "description": "Journey start time for this particular vehicle; format is ISO-8601",
+            "format": "date-time"
+          },
+          "countryStart": {
+            "type": "string",
+            "description": "Country, where this vehicle starts the journey; format is ISO 3166-1 alpha-2",
+            "example": "IT"
+          },
+          "journeyEnd": {
+            "type": "string",
+            "description": "Indicates when the journey will end (it is an optional time estimation); format is ISO-8601",
+            "format": "date-time"
+          },
+          "countryEnd": {
+            "type": "string",
+            "description": "Country, where the journey ends for this vehicle; format is ISO 3166-1 alpha-2",
+            "example": "DE"
+          }
+        },
+        "description": "Represents metadata that is uniquely identified by metadataId. "
+      },
+      "PlatformRequestHeader": {
+        "required": [
+          "eftiPlatformId",
+          "requestId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Request identifier, assigned by the platform; its value must be unique",
+            "format": "uuid",
+            "example": "649f6e0b-e180-4690-9a9e-59684fabf0a9"
+          },
+          "eftiPlatformId": {
+            "type": "string",
+            "description": "Requesting platform identifier",
+            "example": "EE-ATV"
+          }
+        },
+        "description": "Represents the identifiers of the request, which was initiated by an eFTI platform. "
+      },
+      "UploadMetadataRequest": {
+        "type": "object",
+        "properties": {
+          "requestHeader": {
+            "$ref": "#/components/schemas/PlatformRequestHeader"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        },
+        "description": "Represents metadata upload request (eFTI message FTI004)"
+      },
+      "Vehicle": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Vehicle identifier (license plate for road transport)",
+            "example": "179MBD"
+          },
+          "registrationCountry": {
+            "type": "string",
+            "description": "Vehicle registration country; format is ISO 3166-1 alpha-2",
+            "example": "EE"
+          },
+          "type": {
+            "type": "string",
+            "description": "Numeric code of transport means (motorized vehicle) as defined in UN/EDIFACT 8179,\nsee https://service.unece.org/trade/untdid/d00a/tred/tred8179.htm.\nIf the vehicle is not motorized, this field holds\nthe UN/EDIFACT numeric code of transport equipment.\nThe code for a truck is \"31\". The code for a trailer is \"TE\".\n",
+            "example": "31"
+          }
+        },
+        "description": "Non-motorized transport equipment, carrying the goods, for example a trailer.\nThis must be present only when goods are stored in the trailer rather than the truck.\n"
+      },
+      "GateResponseHeader": {
+        "required": [
+          "eftiGateId",
+          "requestId",
+          "responseId"
+        ],
+        "type": "object",
+        "properties": {
+          "responseId": {
+            "type": "string",
+            "description": "Response identifier, assigned by the responding gate; this value must be unique",
+            "format": "uuid",
+            "example": "a997b8ce-712e-48ea-9ab2-b7fc0a7e4dc6"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Correlating request identifier",
+            "format": "uuid",
+            "example": "649f6e0b-e180-4690-9a9e-59684fabf0a9"
+          },
+          "eftiGateId": {
+            "type": "string",
+            "description": "Responding gate identifier",
+            "example": "EU-EE1"
+          }
+        },
+        "description": "Holds unique identifiers of the response and the responders"
+      },
+      "UploadMetadataResponse": {
+        "required": [
+          "metadataId",
+          "uil"
+        ],
+        "type": "object",
+        "properties": {
+          "responseHeader": {
+            "$ref": "#/components/schemas/GateResponseHeader"
+          },
+          "metadataId": {
+            "type": "string",
+            "description": "Field generated by the metadata registry to uniquely identify the metadata object",
+            "format": "uuid",
+            "example": "122a9508-28b0-45a8-9645-63a69c2fe61f"
+          },
+          "uil": {
+            "type": "string",
+            "description": "UIL of eFTI dataset. When first registering a new dataset in the gate, the gate assigns this UIL. <br><b>REMARKS</b>UIL format has not been defined yet. TG3 or TG4 should propose proper format. Currently, UIL is defined in XML format only in TIS annex 3 (§6.1)"
+          }
+        },
+        "description": "Represents the gate-to-gate response message for \"metadata search\" (eFTI message FTI021)"
+      },
+      "GateRequestHeader": {
+        "required": [
+          "eftiAapId",
+          "eftiGateId",
+          "profile",
+          "requestId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Request identifier, assigned by requesting gate; its value must be unique",
+            "format": "uuid",
+            "example": "649f6e0b-e180-4690-9a9e-59684fabf0a9"
+          },
+          "eftiGateId": {
+            "type": "string",
+            "description": "Requesting gate identifier",
+            "example": "EU-LU1"
+          },
+          "eftiAapId": {
+            "type": "string",
+            "description": "Identifier of the authority access point that requests data",
+            "example": "LU-POL2"
+          },
+          "profile": {
+            "type": "string",
+            "description": "Authorization profile. The profiles are currently undefined",
+            "example": "POLICE_ROAD_PATROL"
+          }
+        },
+        "description": "Represents the identifiers of the request, which was initiated by an eFTI gate. "
+      },
+      "SearchMetadataRequest": {
+        "required": [
+          "vehicle"
+        ],
+        "type": "object",
+        "properties": {
+          "requestHeader": {
+            "$ref": "#/components/schemas/GateRequestHeader"
+          },
+          "transportMode": {
+            "type": "string",
+            "description": "Optional transport mode filter: RAILWAY, ROAD, AIR, WATERWAY.\nIf present, only metadata objects having this transport mode are included in the response.\nCurrently, only ROAD is supported",
+            "example": "ROAD",
+            "enum": [
+              "RAILWAY",
+              "ROAD",
+              "AIR"
+            ]
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/SearchVehicle"
+          }
+        },
+        "description": "Represents the gate-to-gate request message for \"metadata search\" (eFTI message FTI019)"
+      },
+      "SearchVehicle": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Vehicle identifier (license plate for road transport).\nThis must represent the full number - filtering by partial value is not supported",
+            "example": "179MBD"
+          },
+          "registrationCountry": {
+            "type": "string",
+            "description": "Vehicle registration country; format is ISO 3166-1 alpha-2",
+            "example": "EE"
+          }
+        },
+        "description": "Vehicle filter that indicates the attributes of interest."
+      },
+      "SearchMetadataResponse": {
+        "required": [
+          "metadata"
+        ],
+        "type": "object",
+        "properties": {
+          "responseHeader": {
+            "$ref": "#/components/schemas/GateResponseHeader"
+          },
+          "metadata": {
+            "type": "array",
+            "description": "Metadata objects found according to search criteria. Multiple consignments/shipments can be active at any moment for a single vehicle",
+            "items": {
+              "$ref": "#/components/schemas/Metadata"
+            }
+          }
+        },
+        "description": "Represents the gate-to-gate response message for \"metadata search\" (eFTI message FTI021)"
+      },
+      "GetDatasetRequest": {
+        "required": [
+          "subsetEURequested",
+          "subsetMSRequested",
+          "uil"
+        ],
+        "type": "object",
+        "properties": {
+          "requestHeader": {
+            "$ref": "#/components/schemas/GateRequestHeader"
+          },
+          "uil": {
+            "type": "string",
+            "description": "UIL of the dataset being requested"
+          },
+          "subsetEURequested": {
+            "type": "array",
+            "description": "Data subsets being requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment.",
+            "items": {
+              "type": "string",
+              "description": "Data subsets being requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment."
+            }
+          },
+          "subsetMSRequested": {
+            "type": "array",
+            "description": "National data subsets requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment.",
+            "items": {
+              "type": "string",
+              "description": "National data subsets requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment."
+            }
+          }
+        },
+        "description": "Represents the gate-to-gate request message for \"Get eFTI dataset\" (eFTI message FTI020 aka \"forward the dataset\")"
+      },
+      "EftiCarrier": {
+        "type": "object",
+        "properties": {
+          "organization": {
+            "$ref": "#/components/schemas/EftiTradeParty"
+          },
+          "equipment": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EftiEquipment"
+            }
+          }
+        },
+        "description": "Carrier details"
+      },
+      "EftiDataset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the eFTI dataset, assigned by the economic operator that owns this dataset.\nThe format can be UUID, URN, DID or any other type as long as it is unique"
+          },
+          "consignor": {
+            "$ref": "#/components/schemas/EftiTradeParty"
+          },
+          "consignee": {
+            "$ref": "#/components/schemas/EftiTradeParty"
+          },
+          "carrier": {
+            "$ref": "#/components/schemas/EftiCarrier"
+          },
+          "freight": {
+            "$ref": "#/components/schemas/EftiFreight"
+          },
+          "loadingLocation": {
+            "$ref": "#/components/schemas/EftiLocation"
+          },
+          "unloadingLocation": {
+            "$ref": "#/components/schemas/EftiLocation"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Movement start time",
+            "format": "date-time"
+          }
+        },
+        "description": "eFTI dataset (or the subset that was requested).\nCurrently only the preliminary schema is available, the final one will be defined during 2024"
+      },
+      "EftiEquipment": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "TRUCK",
+              "TRAILER",
+              "RAILCAR",
+              "BARGE",
+              "AIRCRAFT"
+            ]
+          },
+          "idNumber": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        }
+      },
+      "EftiFreight": {
+        "type": "object",
+        "properties": {
+          "marks": {
+            "type": "string"
+          },
+          "packagingMethod": {
+            "type": "string"
+          },
+          "numberOfPackages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": {
+            "type": "string"
+          },
+          "nomenclatureCode": {
+            "type": "string"
+          },
+          "grossWeight": {
+            "type": "number"
+          },
+          "weightUnit": {
+            "type": "string"
+          },
+          "volume": {
+            "type": "number"
+          },
+          "volumeUnit": {
+            "type": "string"
+          }
+        },
+        "description": "Freight details"
+      },
+      "EftiLocation": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "streetAddress": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        },
+        "description": "Freight destination where goods will be unloaded from the truck/trailer"
+      },
+      "EftiTradeParty": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "registrationCode": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "officialAddress": {
+            "$ref": "#/components/schemas/EftiLocation"
+          }
+        }
+      },
+      "GetDatasetResponse": {
+        "required": [
+          "eftiDataset"
+        ],
+        "type": "object",
+        "properties": {
+          "responseHeader": {
+            "$ref": "#/components/schemas/GateResponseHeader"
+          },
+          "eftiDataset": {
+            "$ref": "#/components/schemas/EftiDataset"
+          }
+        },
+        "description": "Represents the gate-to-gate response message for \"Get eFTI dataset\" (eFTI message FTI022 aka \"forward the dataset\")"
+      },
+      "SendNotesRequest": {
+        "required": [
+          "eftiDatasetId",
+          "notes"
+        ],
+        "type": "object",
+        "properties": {
+          "requestHeader": {
+            "$ref": "#/components/schemas/GateRequestHeader"
+          },
+          "eftiDatasetId": {
+            "type": "string",
+            "description": "Dataset identifier (UIL), to which to add the notes"
+          },
+          "notes": {
+            "type": "string",
+            "description": "The contents of the notes"
+          }
+        },
+        "description": "Represents the gate-to-gate response message for \"forward notes\" (eFTI message FTI040)"
+      },
+      "PlatformGetDatasetRequest": {
+        "required": [
+          "eftiDatasetId",
+          "subsetEURequested",
+          "subsetMSRequested"
+        ],
+        "type": "object",
+        "properties": {
+          "requestHeader": {
+            "$ref": "#/components/schemas/GateRequestHeader"
+          },
+          "eftiDatasetId": {
+            "type": "string",
+            "description": "Identifier of the eFTI dataset being requested"
+          },
+          "subsetEURequested": {
+            "type": "array",
+            "description": "Data subsets being requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment.",
+            "items": {
+              "type": "string",
+              "description": "Data subsets being requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment."
+            }
+          },
+          "subsetMSRequested": {
+            "type": "array",
+            "description": "National data subsets requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment.",
+            "items": {
+              "type": "string",
+              "description": "National data subsets requested. <br><b>REMARKS:</b> Current implementation ignores this attribute - subsets are undefined at the moment."
+            }
+          }
+        },
+        "description": "Represents the gate-to-platform request message for \"Get eFTI dataset\" (eFTI message FTI009 aka \"forward dataset request\")"
+      },
+      "PlatformGetDatasetResponse": {
+        "required": [
+          "eftiDataset"
+        ],
+        "type": "object",
+        "properties": {
+          "responseHeader": {
+            "$ref": "#/components/schemas/PlatformResponseHeader"
+          },
+          "eftiDataset": {
+            "$ref": "#/components/schemas/EftiDataset"
+          }
+        },
+        "description": "Represents the platform-to-gate response message for \"Get eFTI dataset\" (eFTI message FTI010 aka \"response with dataset\")"
+      },
+      "PlatformResponseHeader": {
+        "required": [
+          "eftiPlatformId",
+          "requestId",
+          "responseId"
+        ],
+        "type": "object",
+        "properties": {
+          "responseId": {
+            "type": "string",
+            "description": "Response identifier, assigned by the responding platform; this value must be unique",
+            "format": "uuid",
+            "example": "a997b8ce-712e-48ea-9ab2-b7fc0a7e4dc6"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Correlating request identifier",
+            "format": "uuid",
+            "example": "649f6e0b-e180-4690-9a9e-59684fabf0a9"
+          },
+          "eftiPlatformId": {
+            "type": "string",
+            "description": "Responding platform identifier",
+            "example": "EE-ATV"
+          }
+        },
+        "description": "Holds unique identifiers of the response and the responders"
+      },
+      "FindByVehicleResponse": {
+        "type": "object",
+        "properties": {
+          "eftiDataSets": {
+            "type": "array",
+            "description": "The list of eFTI data sets that this gate was able to fetch during timeout period",
+            "items": {
+              "$ref": "#/components/schemas/XRoadEftiData"
+            }
+          },
+          "timeout": {
+            "type": "boolean",
+            "description": "This field has value true when even one of the registered eFTI gates in another member states did not respond (potentially incomplete data). The field has value false when all registered gates were able to send the response within timeout period (success scenario)."
+          }
+        }
+      },
+      "XRoadCargo": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "description": "Cargo description, in free-format text",
+            "example": "Wood chips"
+          },
+          "code": {
+            "type": "string",
+            "description": "Cargo code",
+            "nullable": true,
+            "example": "25170100"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Cargo weight. Cargo weight may not be available",
+            "nullable": true,
+            "example": 8700
+          },
+          "weightUnit": {
+            "type": "string",
+            "description": "Cargo weight unit. The preferred unit is kg",
+            "nullable": true,
+            "example": "kg"
+          },
+          "volume": {
+            "type": "number",
+            "description": "Cargo volume. Cargo volume may not be available",
+            "nullable": true,
+            "example": 13.5
+          },
+          "volumeUnit": {
+            "type": "string",
+            "description": "Cargo volume unit. The preferred unit is m³",
+            "nullable": true,
+            "example": "m³"
+          }
+        },
+        "description": "Represents cargo details"
+      },
+      "XRoadEftiData": {
+        "type": "object",
+        "properties": {
+          "eftiDatasetId": {
+            "type": "string",
+            "description": "Dataset identifier, which is assigned by eFTI platform and uniquely identifies this dataset. This very same eftiDatasetId is registered in the eFTI gate"
+          },
+          "truck": {
+            "$ref": "#/components/schemas/XRoadVehicle"
+          },
+          "trailer": {
+            "$ref": "#/components/schemas/XRoadVehicle"
+          },
+          "consignor": {
+            "$ref": "#/components/schemas/XRoadTradeParty"
+          },
+          "consignee": {
+            "$ref": "#/components/schemas/XRoadTradeParty"
+          },
+          "carrier": {
+            "$ref": "#/components/schemas/XRoadTradeParty"
+          },
+          "startLocation": {
+            "$ref": "#/components/schemas/XRoadTradeParty"
+          },
+          "endLocation": {
+            "$ref": "#/components/schemas/XRoadTradeParty"
+          },
+          "cargo": {
+            "type": "array",
+            "description": "Cargo details. A single dataset can include multiple records of cargo.See <u>XRoadCargo-schema</u> below",
+            "items": {
+              "$ref": "#/components/schemas/XRoadCargo"
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Journey start time, in ISO 3166-1 alpha-2 format",
+            "format": "date-time"
+          },
+          "respondingGates": {
+            "type": "array",
+            "description": "The list of identifiers of the eFTI gates that were able to provide the response",
+            "items": {
+              "type": "string",
+              "description": "The list of identifiers of the eFTI gates that were able to provide the response"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "Consigment inquiry processing status",
+            "enum": [
+              "SUCCESS",
+              "PLATFORM_TIMEOUT",
+              "PLATFORM_ERROR"
+            ]
+          }
+        },
+        "description": "Represents partial data from eFTI dataset. See <u>XRoadVehicle-</u>, <u>XRoadTradeParty-</u> and <u>XRoadCargo-schemas</u> for subset details"
+      },
+      "XRoadTradeParty": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Trade party name",
+            "example": "VIP Logistika AS"
+          },
+          "idNumber": {
+            "type": "string",
+            "description": "Trade party registration vehicleId in vehicleCountry's business register",
+            "example": "10749887"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country of registration of the trade party, in ISO 3166-1 alpha-2 format",
+            "example": "EE"
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact e-mail, format as described in RFC 5322",
+            "example": "info@viplogistika.ee"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone vehicleId, free-format text",
+            "example": "+372 555 6666"
+          },
+          "address": {
+            "type": "string",
+            "description": "Registration address, free-format text",
+            "example": "Kadaka tee 44C, Tallinn"
+          }
+        },
+        "description": "Represents consignor, consignee or carrier details"
+      },
+      "XRoadVehicle": {
+        "required": [
+          "plateNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "plateNumber": {
+            "type": "string",
+            "description": "Vehicle registration plate for road transport)",
+            "example": "179MBD"
+          },
+          "country": {
+            "type": "string",
+            "description": "Vehicle registration country; format is ISO 3166-1 alpha-2",
+            "example": "EE"
+          }
+        },
+        "description": "Trailer license plate details"
+      }
+    }
+  }
+}
